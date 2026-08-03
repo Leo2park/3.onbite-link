@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, type ReactNode } from "react";
 import type { LinkItem } from "@/lib/mock-data";
+import { createClient } from "@/utils/supabase/client";
 
 type NewLinkInput = Omit<LinkItem, "id">;
 
@@ -9,7 +10,7 @@ type LinkUpdateInput = Pick<LinkItem, "title" | "description" | "folderId">;
 
 type LinksContextValue = {
   links: LinkItem[];
-  addLink: (input: NewLinkInput) => LinkItem;
+  addLink: (input: NewLinkInput) => Promise<LinkItem>;
   removeLink: (id: string) => void;
   updateLink: (id: string, updates: LinkUpdateInput) => void;
 };
@@ -25,13 +26,33 @@ export function LinksProvider({
 }) {
   const [links, setLinks] = useState<LinkItem[]>(initialLinks);
 
-  const addLink = (input: NewLinkInput) => {
-    const id =
-      typeof crypto !== "undefined" && "randomUUID" in crypto
-        ? crypto.randomUUID()
-        : `link-${Date.now()}`;
+  const addLink = async (input: NewLinkInput) => {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("links")
+      .insert({
+        url: input.url,
+        title: input.title,
+        description: input.description,
+        thumbnail_url: input.thumbnailUrl,
+        folder_id: Number(input.folderId),
+      })
+      .select("id, url, title, description, thumbnail_url, folder_id")
+      .single();
 
-    const newLink: LinkItem = { id, ...input };
+    if (error || !data) {
+      throw error ?? new Error("failed to create link");
+    }
+
+    const newLink: LinkItem = {
+      id: String(data.id),
+      url: data.url,
+      title: data.title ?? "",
+      description: data.description ?? "",
+      thumbnailUrl: data.thumbnail_url ?? undefined,
+      folderId: data.folder_id != null ? String(data.folder_id) : "",
+    };
+
     setLinks((prev) => [newLink, ...prev]);
     return newLink;
   };

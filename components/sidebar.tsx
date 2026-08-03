@@ -14,15 +14,29 @@ export default function Sidebar() {
   const [editName, setEditName] = useState("");
   const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  const requestDelete = (folder: Folder) => setFolderToDelete(folder);
+  const requestDelete = (folder: Folder) => {
+    setFolderToDelete(folder);
+    setDeleteError(null);
+  };
   const cancelDelete = () => setFolderToDelete(null);
 
-  const confirmDelete = () => {
-    if (!folderToDelete) return;
+  const confirmDelete = async () => {
+    if (!folderToDelete || isDeleting) return;
 
-    removeFolder(folderToDelete.id);
-    setFolderToDelete(null);
+    setIsDeleting(true);
+    setDeleteError(null);
+
+    try {
+      await removeFolder(folderToDelete.id);
+      setFolderToDelete(null);
+    } catch {
+      setDeleteError("폴더를 삭제하지 못했어요. 다시 시도해주세요.");
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const requestEdit = (folder: Folder) => {
@@ -145,10 +159,15 @@ export default function Sidebar() {
               &apos;{folderToDelete.name}&apos; 폴더를 정말 삭제하시겠어요?
             </p>
 
+            {deleteError && (
+              <p className="text-sm text-[var(--error)]">{deleteError}</p>
+            )}
+
             <div className="flex justify-end gap-2">
               <button
                 type="button"
                 onClick={cancelDelete}
+                disabled={isDeleting}
                 className="btn-secondary px-4 py-2 text-sm font-medium"
               >
                 취소
@@ -156,9 +175,10 @@ export default function Sidebar() {
               <button
                 type="button"
                 onClick={confirmDelete}
+                disabled={isDeleting}
                 className="btn-danger px-4 py-2 text-sm font-medium"
               >
-                삭제
+                {isDeleting ? "삭제 중..." : "삭제"}
               </button>
             </div>
           </div>

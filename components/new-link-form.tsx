@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useFolders } from "@/lib/folders-context";
 import { useLinks } from "@/lib/links-context";
@@ -15,11 +15,13 @@ export default function NewLinkForm() {
   const [folderId, setFolderId] = useState(folders[0]?.id ?? "");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const isSubmittingRef = useRef(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!folderId) return;
+    if (!folderId || isSubmittingRef.current) return;
 
+    isSubmittingRef.current = true;
     setIsSaving(true);
     setError(null);
 
@@ -31,7 +33,7 @@ export default function NewLinkForm() {
         throw new Error("failed to fetch open graph data");
       }
 
-      addLink({
+      await addLink({
         title: data.title,
         url: data.url,
         description: data.description,
@@ -42,8 +44,9 @@ export default function NewLinkForm() {
       router.push(`/folder/${folderId}`);
     } catch {
       setError(
-        "링크 정보를 가져오지 못했어요. 주소를 확인하고 다시 시도해주세요.",
+        "링크를 추가하지 못했어요. 주소를 확인하고 다시 시도해주세요.",
       );
+      isSubmittingRef.current = false;
       setIsSaving(false);
     }
   };

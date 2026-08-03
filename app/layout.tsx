@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { FoldersProvider } from "@/lib/folders-context";
 import { LinksProvider } from "@/lib/links-context";
-import { links } from "@/lib/mock-data";
 import { createClient } from "@/utils/supabase/server";
 
 export const metadata: Metadata = {
@@ -16,14 +15,29 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const supabase = await createClient();
-  const { data } = await supabase
+
+  const { data: folderRows } = await supabase
     .from("folders")
     .select("id, name")
     .order("id", { ascending: true });
 
-  const folders = (data ?? []).map((folder) => ({
+  const folders = (folderRows ?? []).map((folder) => ({
     id: String(folder.id),
     name: folder.name,
+  }));
+
+  const { data: linkRows } = await supabase
+    .from("links")
+    .select("id, url, title, description, thumbnail_url, folder_id")
+    .order("created_at", { ascending: false });
+
+  const links = (linkRows ?? []).map((link) => ({
+    id: String(link.id),
+    url: link.url,
+    title: link.title ?? "",
+    description: link.description ?? "",
+    thumbnailUrl: link.thumbnail_url ?? undefined,
+    folderId: link.folder_id != null ? String(link.folder_id) : "",
   }));
 
   return (
