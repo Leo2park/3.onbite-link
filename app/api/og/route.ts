@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const html = await response.text();
+    const html = await decodeResponseBody(response);
     const data = extractOpenGraph(html, targetUrl);
 
     return NextResponse.json(data);
@@ -50,6 +50,41 @@ export async function GET(request: NextRequest) {
       { status: 502 },
     );
   }
+}
+
+async function decodeResponseBody(response: Response): Promise<string> {
+  const buffer = await response.arrayBuffer();
+  const charset =
+    getCharsetFromHeader(response.headers.get("content-type")) ??
+    getCharsetFromMeta(buffer) ??
+    "utf-8";
+
+  try {
+    return new TextDecoder(charset).decode(buffer);
+  } catch {
+    return new TextDecoder("utf-8").decode(buffer);
+  }
+}
+
+function getCharsetFromHeader(
+  contentType: string | null,
+): string | undefined {
+  return contentType?.match(/charset=([^;]+)/i)?.[1]?.trim().toLowerCase();
+}
+
+function getCharsetFromMeta(buffer: ArrayBuffer): string | undefined {
+  // Charset declarations are always plain ASCII, so a lossy latin1 decode
+  // of the head of the document is enough to find them regardless of the
+  // document's real encoding.
+  const preview = new TextDecoder("latin1").decode(buffer.slice(0, 2048));
+
+  const htmlCharset = preview.match(/<meta[^>]+charset=["']?([a-z0-9_-]+)/i);
+  if (htmlCharset) return htmlCharset[1].toLowerCase();
+
+  const httpEquiv = preview.match(
+    /<meta[^>]+http-equiv=["']content-type["'][^>]+content=["'][^"']*charset=([a-z0-9_-]+)/i,
+  );
+  return httpEquiv?.[1]?.toLowerCase();
 }
 
 function extractOpenGraph(html: string, baseUrl: URL): OpenGraphData {

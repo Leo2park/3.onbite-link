@@ -5,9 +5,13 @@ import type { LinkItem } from "@/lib/mock-data";
 
 type NewLinkInput = Omit<LinkItem, "id">;
 
+type LinkUpdateInput = Pick<LinkItem, "title" | "description" | "folderId">;
+
 type LinksContextValue = {
   links: LinkItem[];
   addLink: (input: NewLinkInput) => LinkItem;
+  removeLink: (id: string) => void;
+  updateLink: (id: string, updates: LinkUpdateInput) => void;
 };
 
 const LinksContext = createContext<LinksContextValue | null>(null);
@@ -32,8 +36,20 @@ export function LinksProvider({
     return newLink;
   };
 
+  const removeLink = (id: string) => {
+    setLinks((prev) => prev.filter((link) => link.id !== id));
+  };
+
+  const updateLink = (id: string, updates: LinkUpdateInput) => {
+    setLinks((prev) =>
+      prev.map((link) => (link.id === id ? { ...link, ...updates } : link)),
+    );
+  };
+
   return (
-    <LinksContext.Provider value={{ links, addLink }}>
+    <LinksContext.Provider
+      value={{ links, addLink, removeLink, updateLink }}
+    >
       {children}
     </LinksContext.Provider>
   );

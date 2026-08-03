@@ -23,6 +23,7 @@
 # misc
 .DS_Store
 *.pem
+!certs/eprism-root.pem
 
 # debug
 npm-debug.log*
