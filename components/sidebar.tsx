@@ -2,17 +2,18 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { Folder } from "@/lib/mock-data";
+import { useFolders } from "@/lib/folders-context";
 
-export default function Sidebar({ folders }: { folders: Folder[] }) {
+export default function Sidebar() {
   const pathname = usePathname();
+  const { folders } = useFolders();
 
   return (
-    <aside className="w-56 shrink-0 border-r border-black/10 px-3 py-6 dark:border-white/10">
+    <aside className="w-56 shrink-0 border-r border-[var(--border)] px-3 py-6">
       <nav className="flex flex-col gap-1">
         <SidebarLink href="/" label="ALL" isActive={pathname === "/"} />
 
-        <p className="mt-6 px-3 pb-1 text-xs font-medium uppercase tracking-wide text-zinc-400">
+        <p className="mt-6 px-3 pb-1 text-xs font-medium uppercase tracking-wide text-[var(--text-sub)]">
           폴더
         </p>
         {folders.map((folder) => (
@@ -40,10 +41,8 @@ function SidebarLink({
   return (
     <Link
       href={href}
-      className={`rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors ${
-        isActive
-          ? "bg-black text-white dark:bg-white dark:text-black"
-          : "text-zinc-600 hover:bg-black/5 dark:text-zinc-300 dark:hover:bg-white/10"
+      className={`sidebar-item rounded-lg px-3 py-2 text-left text-sm font-medium ${
+        isActive ? "sidebar-item-active" : ""
       }`}
     >
       {label}

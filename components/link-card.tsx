@@ -8,17 +8,17 @@ export default function LinkCard({ link }: { link: LinkItem }) {
       href={link.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="group flex flex-col overflow-hidden rounded-xl border border-black/10 bg-white transition-shadow hover:shadow-md dark:border-white/10 dark:bg-zinc-900"
+      className="card card-hover flex flex-col overflow-hidden"
     >
-      <div className="flex aspect-video w-full items-center justify-center bg-zinc-100 text-xs text-zinc-400 dark:bg-zinc-800">
+      <div className="flex aspect-video w-full items-center justify-center bg-[var(--hover-bg)] text-xs text-[var(--text-sub)]">
         썸네일 없음
       </div>
       <div className="flex flex-col gap-1 p-4">
-        <span className="text-xs text-zinc-400">{hostname}</span>
-        <h3 className="line-clamp-1 text-sm font-semibold text-black dark:text-white">
+        <span className="text-xs text-[var(--text-sub)]">{hostname}</span>
+        <h3 className="line-clamp-1 text-sm font-semibold text-[var(--text)]">
           {link.title}
         </h3>
-        <p className="line-clamp-2 text-xs text-zinc-500 dark:text-zinc-400">
+        <p className="line-clamp-2 text-xs text-[var(--text-sub)]">
           {link.description}
         </p>
       </div>

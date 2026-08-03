@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import type { Folder } from "@/lib/mock-data";
+import { useFolders } from "@/lib/folders-context";
 
-export default function NewLinkForm({ folders }: { folders: Folder[] }) {
+export default function NewLinkForm() {
+  const { folders } = useFolders();
   const [url, setUrl] = useState("");
   const [folderId, setFolderId] = useState(folders[0]?.id ?? "");
 
@@ -16,7 +17,7 @@ export default function NewLinkForm({ folders }: { folders: Folder[] }) {
       <div className="flex flex-col gap-1.5">
         <label
           htmlFor="url"
-          className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+          className="text-sm font-medium text-[var(--text)]"
         >
           링크 주소
         </label>
@@ -27,14 +28,14 @@ export default function NewLinkForm({ folders }: { folders: Folder[] }) {
           placeholder="https://example.com"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          className="rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-black outline-none focus:border-black/30 dark:border-white/10 dark:bg-zinc-900 dark:text-white dark:focus:border-white/30"
+          className="field px-3 py-2 text-base"
         />
       </div>
 
       <div className="flex flex-col gap-1.5">
         <label
           htmlFor="folder"
-          className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+          className="text-sm font-medium text-[var(--text)]"
         >
           폴더
         </label>
@@ -42,7 +43,7 @@ export default function NewLinkForm({ folders }: { folders: Folder[] }) {
           id="folder"
           value={folderId}
           onChange={(e) => setFolderId(e.target.value)}
-          className="rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-black outline-none focus:border-black/30 dark:border-white/10 dark:bg-zinc-900 dark:text-white dark:focus:border-white/30"
+          className="field px-3 py-2 text-base"
         >
           {folders.map((folder) => (
             <option key={folder.id} value={folder.id}>
@@ -54,7 +55,7 @@ export default function NewLinkForm({ folders }: { folders: Folder[] }) {
 
       <button
         type="submit"
-        className="mt-2 self-start rounded-full bg-black px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+        className="btn-primary mt-2 self-start px-5 py-2 text-sm font-medium"
       >
         저장
       </button>
