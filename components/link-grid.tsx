@@ -14,14 +14,27 @@ export default function LinkGrid({ links }: { links: LinkItem[] }) {
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editFolderId, setEditFolderId] = useState("");
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const cancelDelete = () => setLinkToDelete(null);
 
-  const confirmDelete = () => {
-    if (!linkToDelete) return;
+  const confirmDelete = async () => {
+    if (!linkToDelete || isDeleting) return;
 
-    removeLink(linkToDelete.id);
-    setLinkToDelete(null);
+    setIsDeleting(true);
+    setDeleteError(null);
+
+    try {
+      await removeLink(linkToDelete.id);
+      setLinkToDelete(null);
+    } catch {
+      setDeleteError("링크를 삭제하지 못했어요. 다시 시도해주세요.");
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const requestEdit = (link: LinkItem) => {
@@ -29,19 +42,29 @@ export default function LinkGrid({ links }: { links: LinkItem[] }) {
     setEditTitle(link.title);
     setEditDescription(link.description);
     setEditFolderId(link.folderId);
+    setEditError(null);
   };
   const cancelEdit = () => setLinkToEdit(null);
 
-  const confirmEdit = (e: React.FormEvent<HTMLFormElement>) => {
+  const confirmEdit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!linkToEdit) return;
+    if (!linkToEdit || isSavingEdit) return;
 
-    updateLink(linkToEdit.id, {
-      title: editTitle,
-      description: editDescription,
-      folderId: editFolderId,
-    });
-    setLinkToEdit(null);
+    setIsSavingEdit(true);
+    setEditError(null);
+
+    try {
+      await updateLink(linkToEdit.id, {
+        title: editTitle,
+        description: editDescription,
+        folderId: editFolderId,
+      });
+      setLinkToEdit(null);
+    } catch {
+      setEditError("링크를 수정하지 못했어요. 다시 시도해주세요.");
+    } finally {
+      setIsSavingEdit(false);
+    }
   };
 
   if (links.length === 0) {
@@ -58,7 +81,10 @@ export default function LinkGrid({ links }: { links: LinkItem[] }) {
             key={link.id}
             link={link}
             onEdit={() => requestEdit(link)}
-            onDelete={() => setLinkToDelete(link)}
+            onDelete={() => {
+              setLinkToDelete(link);
+              setDeleteError(null);
+            }}
           />
         ))}
       </div>
@@ -88,6 +114,7 @@ export default function LinkGrid({ links }: { links: LinkItem[] }) {
                 id="edit-folder"
                 value={editFolderId}
                 onChange={(e) => setEditFolderId(e.target.value)}
+                disabled={isSavingEdit}
                 className="field px-3 py-2 text-base"
               >
                 {folders.map((folder) => (
@@ -110,6 +137,7 @@ export default function LinkGrid({ links }: { links: LinkItem[] }) {
                 type="text"
                 required
                 autoFocus
+                disabled={isSavingEdit}
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
                 className="field px-3 py-2 text-base"
@@ -126,25 +154,32 @@ export default function LinkGrid({ links }: { links: LinkItem[] }) {
               <textarea
                 id="edit-description"
                 rows={3}
+                disabled={isSavingEdit}
                 value={editDescription}
                 onChange={(e) => setEditDescription(e.target.value)}
                 className="field px-3 py-2 text-base"
               />
             </div>
 
+            {editError && (
+              <p className="text-sm text-[var(--error)]">{editError}</p>
+            )}
+
             <div className="flex justify-end gap-2">
               <button
                 type="button"
                 onClick={cancelEdit}
+                disabled={isSavingEdit}
                 className="btn-secondary px-4 py-2 text-sm font-medium"
               >
                 취소
               </button>
               <button
                 type="submit"
+                disabled={isSavingEdit}
                 className="btn-primary px-4 py-2 text-sm font-medium"
               >
-                저장
+                {isSavingEdit ? "저장 중..." : "저장"}
               </button>
             </div>
           </form>
@@ -167,10 +202,15 @@ export default function LinkGrid({ links }: { links: LinkItem[] }) {
               &apos;{linkToDelete.title}&apos; 링크를 정말 삭제하시겠어요?
             </p>
 
+            {deleteError && (
+              <p className="text-sm text-[var(--error)]">{deleteError}</p>
+            )}
+
             <div className="flex justify-end gap-2">
               <button
                 type="button"
                 onClick={cancelDelete}
+                disabled={isDeleting}
                 className="btn-secondary px-4 py-2 text-sm font-medium"
               >
                 취소
@@ -178,9 +218,10 @@ export default function LinkGrid({ links }: { links: LinkItem[] }) {
               <button
                 type="button"
                 onClick={confirmDelete}
+                disabled={isDeleting}
                 className="btn-danger px-4 py-2 text-sm font-medium"
               >
-                삭제
+                {isDeleting ? "삭제 중..." : "삭제"}
               </button>
             </div>
           </div>

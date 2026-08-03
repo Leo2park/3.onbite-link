@@ -11,8 +11,8 @@ type LinkUpdateInput = Pick<LinkItem, "title" | "description" | "folderId">;
 type LinksContextValue = {
   links: LinkItem[];
   addLink: (input: NewLinkInput) => Promise<LinkItem>;
-  removeLink: (id: string) => void;
-  updateLink: (id: string, updates: LinkUpdateInput) => void;
+  removeLink: (id: string) => Promise<void>;
+  updateLink: (id: string, updates: LinkUpdateInput) => Promise<void>;
 };
 
 const LinksContext = createContext<LinksContextValue | null>(null);
@@ -57,11 +57,32 @@ export function LinksProvider({
     return newLink;
   };
 
-  const removeLink = (id: string) => {
+  const removeLink = async (id: string) => {
+    const supabase = createClient();
+    const { error } = await supabase.from("links").delete().eq("id", id);
+
+    if (error) {
+      throw error;
+    }
+
     setLinks((prev) => prev.filter((link) => link.id !== id));
   };
 
-  const updateLink = (id: string, updates: LinkUpdateInput) => {
+  const updateLink = async (id: string, updates: LinkUpdateInput) => {
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("links")
+      .update({
+        title: updates.title,
+        description: updates.description,
+        folder_id: Number(updates.folderId),
+      })
+      .eq("id", id);
+
+    if (error) {
+      throw error;
+    }
+
     setLinks((prev) =>
       prev.map((link) => (link.id === id ? { ...link, ...updates } : link)),
     );
