@@ -10,6 +10,7 @@
   --accent: #1c7ea6;
   --accent-hover: #1a789d;
   --hover-bg: #f1f1ef;
+  --badge-bg: #e8e8e5;
   --error: #eb5757;
   --success: #3f8d7f;
 }
@@ -25,6 +26,7 @@
     --accent: #529cca;
     --accent-hover: #68b5e1;
     --hover-bg: #2f2f2f;
+    --badge-bg: #454545;
     --error: #eb5757;
     --success: #4dab9a;
   }

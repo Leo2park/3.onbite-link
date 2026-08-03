@@ -80,6 +80,7 @@ export default function LinkGrid({ links }: { links: LinkItem[] }) {
           <LinkCard
             key={link.id}
             link={link}
+            folderName={folders.find((folder) => folder.id === link.folderId)?.name}
             onEdit={() => requestEdit(link)}
             onDelete={() => {
               setLinkToDelete(link);

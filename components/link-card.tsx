@@ -2,10 +2,12 @@ import type { LinkItem } from "@/lib/mock-data";
 
 export default function LinkCard({
   link,
+  folderName,
   onEdit,
   onDelete,
 }: {
   link: LinkItem;
+  folderName?: string;
   onEdit?: () => void;
   onDelete?: () => void;
 }) {
@@ -17,9 +19,9 @@ export default function LinkCard({
         href={link.url}
         target="_blank"
         rel="noopener noreferrer"
-        className="card card-hover flex flex-col overflow-hidden"
+        className="card card-hover flex flex-col"
       >
-        <div className="flex aspect-video w-full items-center justify-center overflow-hidden bg-[var(--hover-bg)] text-xs text-[var(--text-sub)]">
+        <div className="flex aspect-video w-full items-center justify-center overflow-hidden rounded-t-lg bg-[var(--hover-bg)] text-xs text-[var(--text-sub)]">
           {link.thumbnailUrl ? (
             // eslint-disable-next-line @next/next/no-img-element -- thumbnail domains are arbitrary and unknown ahead of time
             <img
@@ -32,13 +34,25 @@ export default function LinkCard({
           )}
         </div>
         <div className="flex flex-col gap-1 p-4">
+          {folderName && (
+            <span className="mb-1 inline-flex w-fit shrink-0 self-start items-center rounded-full px-3 py-1 text-xs font-medium text-[var(--text)] bg-[var(--badge-bg)]">
+              {folderName}
+            </span>
+          )}
           <span className="text-xs text-[var(--text-sub)]">{hostname}</span>
           <h3 className="line-clamp-1 text-sm font-semibold text-[var(--text)]">
             {link.title}
           </h3>
-          <p className="line-clamp-2 text-xs text-[var(--text-sub)]">
-            {link.description}
-          </p>
+          <div className="group/desc relative">
+            <p className="line-clamp-2 min-h-8 text-xs text-[var(--text-sub)]">
+              {link.description}
+            </p>
+            {link.description && (
+              <div className="pointer-events-none absolute bottom-full left-0 z-30 mb-2 w-64 max-w-xs rounded-md border border-[var(--border)] bg-[var(--card-bg)] p-3 text-xs text-[var(--text)] opacity-0 transition-opacity duration-150 group-hover/desc:opacity-100">
+                {link.description}
+              </div>
+            )}
+          </div>
         </div>
       </a>
 
