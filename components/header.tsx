@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { useFolders } from "@/lib/folders-context";
 
@@ -8,18 +8,35 @@ export default function Header() {
   const { addFolder } = useFolders();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [folderName, setFolderName] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const isSubmittingRef = useRef(false);
 
   const openModal = () => {
     setFolderName("");
+    setError(null);
     setIsModalOpen(true);
   };
 
   const closeModal = () => setIsModalOpen(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    addFolder(folderName);
-    closeModal();
+    if (isSubmittingRef.current) return;
+
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      await addFolder(folderName);
+      closeModal();
+    } catch {
+      setError("폴더를 추가하지 못했어요. 다시 시도해주세요.");
+    } finally {
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -77,6 +94,7 @@ export default function Header() {
                 type="text"
                 required
                 autoFocus
+                disabled={isSubmitting}
                 placeholder="폴더 이름을 입력하세요"
                 value={folderName}
                 onChange={(e) => setFolderName(e.target.value)}
@@ -84,19 +102,23 @@ export default function Header() {
               />
             </div>
 
+            {error && <p className="text-sm text-[var(--error)]">{error}</p>}
+
             <div className="flex justify-end gap-2">
               <button
                 type="button"
                 onClick={closeModal}
+                disabled={isSubmitting}
                 className="btn-secondary px-4 py-2 text-sm font-medium"
               >
                 취소
               </button>
               <button
                 type="submit"
+                disabled={isSubmitting}
                 className="btn-primary px-4 py-2 text-sm font-medium"
               >
-                저장
+                {isSubmitting ? "저장 중..." : "저장"}
               </button>
             </div>
           </form>

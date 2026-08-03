@@ -12,6 +12,8 @@ export default function Sidebar() {
   const [folderToDelete, setFolderToDelete] = useState<Folder | null>(null);
   const [folderToEdit, setFolderToEdit] = useState<Folder | null>(null);
   const [editName, setEditName] = useState("");
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
 
   const requestDelete = (folder: Folder) => setFolderToDelete(folder);
   const cancelDelete = () => setFolderToDelete(null);
@@ -26,15 +28,25 @@ export default function Sidebar() {
   const requestEdit = (folder: Folder) => {
     setFolderToEdit(folder);
     setEditName(folder.name);
+    setEditError(null);
   };
   const cancelEdit = () => setFolderToEdit(null);
 
-  const confirmEdit = (e: React.FormEvent<HTMLFormElement>) => {
+  const confirmEdit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!folderToEdit) return;
+    if (!folderToEdit || isSavingEdit) return;
 
-    renameFolder(folderToEdit.id, editName);
-    setFolderToEdit(null);
+    setIsSavingEdit(true);
+    setEditError(null);
+
+    try {
+      await renameFolder(folderToEdit.id, editName);
+      setFolderToEdit(null);
+    } catch {
+      setEditError("폴더 이름을 수정하지 못했어요. 다시 시도해주세요.");
+    } finally {
+      setIsSavingEdit(false);
+    }
   };
 
   return (
@@ -85,25 +97,32 @@ export default function Sidebar() {
                 type="text"
                 required
                 autoFocus
+                disabled={isSavingEdit}
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
                 className="field px-3 py-2 text-base"
               />
             </div>
 
+            {editError && (
+              <p className="text-sm text-[var(--error)]">{editError}</p>
+            )}
+
             <div className="flex justify-end gap-2">
               <button
                 type="button"
                 onClick={cancelEdit}
+                disabled={isSavingEdit}
                 className="btn-secondary px-4 py-2 text-sm font-medium"
               >
                 취소
               </button>
               <button
                 type="submit"
+                disabled={isSavingEdit}
                 className="btn-primary px-4 py-2 text-sm font-medium"
               >
-                저장
+                {isSavingEdit ? "저장 중..." : "저장"}
               </button>
             </div>
           </form>
