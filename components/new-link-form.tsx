@@ -1,15 +1,51 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useFolders } from "@/lib/folders-context";
+import { useLinks } from "@/lib/links-context";
+import type { OpenGraphData } from "@/app/api/og/route";
 
 export default function NewLinkForm() {
   const { folders } = useFolders();
+  const { addLink } = useLinks();
+  const router = useRouter();
+
   const [url, setUrl] = useState("");
   const [folderId, setFolderId] = useState(folders[0]?.id ?? "");
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!folderId) return;
+
+    setIsSaving(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/og?url=${encodeURIComponent(url)}`);
+      const data: OpenGraphData = await response.json();
+
+      if (!response.ok) {
+        throw new Error("failed to fetch open graph data");
+      }
+
+      addLink({
+        title: data.title,
+        url: data.url,
+        description: data.description,
+        thumbnailUrl: data.thumbnailUrl,
+        folderId,
+      });
+
+      router.push(`/folder/${folderId}`);
+    } catch {
+      setError(
+        "링크 정보를 가져오지 못했어요. 주소를 확인하고 다시 시도해주세요.",
+      );
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -53,11 +89,14 @@ export default function NewLinkForm() {
         </select>
       </div>
 
+      {error && <p className="text-sm text-[var(--error)]">{error}</p>}
+
       <button
         type="submit"
+        disabled={isSaving}
         className="btn-primary mt-2 self-start px-5 py-2 text-sm font-medium"
       >
-        저장
+        {isSaving ? "저장 중..." : "저장"}
       </button>
     </form>
   );

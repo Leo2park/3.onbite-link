@@ -85,6 +85,16 @@ body {
   background: var(--hover-bg);
 }
 
+.btn-danger {
+  background: var(--error);
+  color: #ffffff;
+  border-radius: 6px;
+  transition: background-color 0.15s ease;
+}
+.btn-danger:hover {
+  opacity: 0.9;
+}
+
 /* 입력 필드 / 셀렉트 */
 .field {
   background: var(--card-bg);

@@ -10,8 +10,17 @@ export default function LinkCard({ link }: { link: LinkItem }) {
       rel="noopener noreferrer"
       className="card card-hover flex flex-col overflow-hidden"
     >
-      <div className="flex aspect-video w-full items-center justify-center bg-[var(--hover-bg)] text-xs text-[var(--text-sub)]">
-        썸네일 없음
+      <div className="flex aspect-video w-full items-center justify-center overflow-hidden bg-[var(--hover-bg)] text-xs text-[var(--text-sub)]">
+        {link.thumbnailUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element -- thumbnail domains are arbitrary and unknown ahead of time
+          <img
+            src={link.thumbnailUrl}
+            alt=""
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          "썸네일 없음"
+        )}
       </div>
       <div className="flex flex-col gap-1 p-4">
         <span className="text-xs text-[var(--text-sub)]">{hostname}</span>

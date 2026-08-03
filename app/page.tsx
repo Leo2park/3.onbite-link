@@ -1,9 +1,13 @@
+"use client";
+
 import Header from "@/components/header";
 import Sidebar from "@/components/sidebar";
 import LinkGrid from "@/components/link-grid";
-import { links } from "@/lib/mock-data";
+import { useLinks } from "@/lib/links-context";
 
 export default function Home() {
+  const { links } = useLinks();
+
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
