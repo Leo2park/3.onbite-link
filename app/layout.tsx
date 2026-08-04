@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 import { FoldersProvider } from "@/lib/folders-context";
 import { LinksProvider } from "@/lib/links-context";
@@ -73,6 +74,15 @@ export default async function RootLayout({
 
   return (
     <html lang="ko" className="h-full">
+      <head>
+        <Script id="microsoft-clarity" strategy="beforeInteractive">
+          {`(function(c,l,a,r,i,t,y){
+    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+})(window, document, "clarity", "script", "xwztrdrvt5");`}
+        </Script>
+      </head>
       <body className="flex min-h-full flex-col">
         <FoldersProvider initialFolders={folders} initialUserId={user?.id ?? null}>
           <LinksProvider initialLinks={links} initialUserId={user?.id ?? null}>
