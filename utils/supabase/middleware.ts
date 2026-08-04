@@ -29,7 +29,16 @@ export async function updateSession(request: NextRequest) {
   // Refreshes the session and syncs the cookies above. Do not add logic
   // between createServerClient and this call, and do not remove it —
   // without it, Supabase sessions silently stop refreshing.
-  await supabase.auth.getUser();
+  const { data } = await supabase.auth.getUser();
+
+  const { pathname } = request.nextUrl;
+  const isProtectedPath =
+    pathname === "/" || pathname === "/new" || pathname.startsWith("/folder/");
+
+  if (!data.user && isProtectedPath) {
+    const redirectUrl = new URL("/login", request.url);
+    return NextResponse.redirect(redirectUrl);
+  }
 
   return supabaseResponse;
 }
