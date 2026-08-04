@@ -142,6 +142,12 @@ export default function SignupPage() {
             로그인
           </Link>
         </p>
+
+        <p className="mt-2 text-center text-sm text-[var(--text-sub)]">
+          <Link href="/privacy" className="hover:underline">
+            개인정보 처리방침
+          </Link>
+        </p>
       </div>
 
       {toastMessage && (

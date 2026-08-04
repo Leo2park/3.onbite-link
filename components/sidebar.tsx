@@ -97,28 +97,37 @@ export default function Sidebar() {
           ))}
         </nav>
 
-        <button
-          type="button"
-          onClick={handleLogout}
-          disabled={isLoggingOut}
-          className="flex items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-[var(--text-sub)] hover:bg-[var(--hover-bg)] hover:text-[var(--error)] disabled:opacity-60"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 20 20"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            className="h-4 w-4 shrink-0"
+        <div className="flex flex-col gap-1">
+          <button
+            type="button"
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            className="flex items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-[var(--text-sub)] hover:bg-[var(--hover-bg)] hover:text-[var(--error)] disabled:opacity-60"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M7.5 17.5H5a1.5 1.5 0 0 1-1.5-1.5V4A1.5 1.5 0 0 1 5 2.5h2.5M13 14l3.5-4L13 6m3.5 4H7.5"
-            />
-          </svg>
-          {isLoggingOut ? "로그아웃 중..." : "로그아웃"}
-        </button>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              className="h-4 w-4 shrink-0"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M7.5 17.5H5a1.5 1.5 0 0 1-1.5-1.5V4A1.5 1.5 0 0 1 5 2.5h2.5M13 14l3.5-4L13 6m3.5 4H7.5"
+              />
+            </svg>
+            {isLoggingOut ? "로그아웃 중..." : "로그아웃"}
+          </button>
+
+          <Link
+            href="/privacy"
+            className="rounded-lg px-3 py-2 text-left text-sm font-medium text-[var(--text-sub)] hover:bg-[var(--hover-bg)]"
+          >
+            개인정보 처리방침
+          </Link>
+        </div>
       </aside>
 
       {folderToEdit && (
