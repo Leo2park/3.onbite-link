@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useFolders } from "@/lib/folders-context";
+import { createClient } from "@/utils/supabase/client";
 import type { Folder } from "@/lib/mock-data";
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { folders, removeFolder, renameFolder } = useFolders();
   const [folderToDelete, setFolderToDelete] = useState<Folder | null>(null);
   const [folderToEdit, setFolderToEdit] = useState<Folder | null>(null);
@@ -16,6 +18,17 @@ export default function Sidebar() {
   const [editError, setEditError] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    if (isLoggingOut) return;
+
+    setIsLoggingOut(true);
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/login");
+    router.refresh();
+  };
 
   const requestDelete = (folder: Folder) => {
     setFolderToDelete(folder);
@@ -65,7 +78,7 @@ export default function Sidebar() {
 
   return (
     <>
-      <aside className="w-56 shrink-0 border-r border-[var(--border)] px-3 py-6">
+      <aside className="flex w-56 shrink-0 flex-col justify-between border-r border-[var(--border)] px-3 py-6">
         <nav className="flex flex-col gap-1">
           <SidebarLink href="/" label="ALL" isActive={pathname === "/"} />
 
@@ -83,6 +96,29 @@ export default function Sidebar() {
             />
           ))}
         </nav>
+
+        <button
+          type="button"
+          onClick={handleLogout}
+          disabled={isLoggingOut}
+          className="flex items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-[var(--text-sub)] hover:bg-[var(--hover-bg)] hover:text-[var(--error)] disabled:opacity-60"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 20 20"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            className="h-4 w-4 shrink-0"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M7.5 17.5H5a1.5 1.5 0 0 1-1.5-1.5V4A1.5 1.5 0 0 1 5 2.5h2.5M13 14l3.5-4L13 6m3.5 4H7.5"
+            />
+          </svg>
+          {isLoggingOut ? "로그아웃 중..." : "로그아웃"}
+        </button>
       </aside>
 
       {folderToEdit && (
