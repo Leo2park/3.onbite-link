@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
@@ -25,6 +26,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isKakaoSubmitting, setIsKakaoSubmitting] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const canSubmit = Boolean(email && password);
@@ -48,6 +50,24 @@ export default function LoginPage() {
     }
 
     router.push("/");
+  };
+
+  const handleKakaoLogin = async () => {
+    if (isKakaoSubmitting) return;
+    setIsKakaoSubmitting(true);
+
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "kakao",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+
+    if (error) {
+      setToastMessage("카카오 로그인에 실패했어요. 다시 시도해주세요.");
+      setIsKakaoSubmitting(false);
+    }
   };
 
   return (
@@ -106,6 +126,23 @@ export default function LoginPage() {
             {isSubmitting ? "로그인 중..." : "로그인"}
           </button>
         </form>
+
+        <button
+          type="button"
+          onClick={handleKakaoLogin}
+          disabled={isKakaoSubmitting}
+          aria-label="카카오 로그인"
+          className="relative mt-2 block w-full overflow-hidden rounded-lg disabled:opacity-60"
+        >
+          <Image
+            src="/kakao_login_large_wide.png"
+            alt="카카오 로그인"
+            width={600}
+            height={90}
+            className="h-auto w-full"
+            priority
+          />
+        </button>
 
         <p className="mt-6 text-center text-sm text-[var(--text-sub)]">
           비밀번호를 잊으셨나요?{" "}
