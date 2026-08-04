@@ -1,6 +1,13 @@
 "use client";
 
-import { createContext, useContext, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import type { LinkItem } from "@/lib/mock-data";
 import { createClient } from "@/utils/supabase/client";
 
@@ -17,14 +24,56 @@ type LinksContextValue = {
 
 const LinksContext = createContext<LinksContextValue | null>(null);
 
+async function fetchLinksForUser(userId: string): Promise<LinkItem[]> {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("links")
+    .select("id, url, title, description, thumbnail_url, folder_id")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+
+  return (data ?? []).map((link) => ({
+    id: String(link.id),
+    url: link.url,
+    title: link.title ?? "",
+    description: link.description ?? "",
+    thumbnailUrl: link.thumbnail_url ?? undefined,
+    folderId: link.folder_id != null ? String(link.folder_id) : "",
+  }));
+}
+
 export function LinksProvider({
   initialLinks,
+  initialUserId,
   children,
 }: {
   initialLinks: LinkItem[];
+  initialUserId: string | null;
   children: ReactNode;
 }) {
   const [links, setLinks] = useState<LinkItem[]>(initialLinks);
+  const currentUserId = useRef(initialUserId);
+
+  useEffect(() => {
+    const supabase = createClient();
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      const nextUserId = session?.user.id ?? null;
+      if (nextUserId === currentUserId.current) return;
+
+      currentUserId.current = nextUserId;
+
+      if (!nextUserId) {
+        setLinks([]);
+        return;
+      }
+
+      fetchLinksForUser(nextUserId).then(setLinks);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const addLink = async (input: NewLinkInput) => {
     const supabase = createClient();

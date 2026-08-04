@@ -1,6 +1,12 @@
+import type { Metadata } from "next";
 import Header from "@/components/header";
 import Sidebar from "@/components/sidebar";
 import NewLinkForm from "@/components/new-link-form";
+
+export const metadata: Metadata = {
+  title: "새 링크 추가",
+  description: "저장하고 싶은 링크를 새로 추가하세요.",
+};
 
 export default function NewLinkPage() {
   return (

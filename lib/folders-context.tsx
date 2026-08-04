@@ -1,6 +1,13 @@
 "use client";
 
-import { createContext, useContext, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import type { Folder } from "@/lib/mock-data";
 import { createClient } from "@/utils/supabase/client";
 
@@ -13,14 +20,52 @@ type FoldersContextValue = {
 
 const FoldersContext = createContext<FoldersContextValue | null>(null);
 
+async function fetchFoldersForUser(userId: string): Promise<Folder[]> {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("folders")
+    .select("id, name")
+    .eq("user_id", userId)
+    .order("id", { ascending: true });
+
+  return (data ?? []).map((folder) => ({
+    id: String(folder.id),
+    name: folder.name,
+  }));
+}
+
 export function FoldersProvider({
   initialFolders,
+  initialUserId,
   children,
 }: {
   initialFolders: Folder[];
+  initialUserId: string | null;
   children: ReactNode;
 }) {
   const [folders, setFolders] = useState<Folder[]>(initialFolders);
+  const currentUserId = useRef(initialUserId);
+
+  useEffect(() => {
+    const supabase = createClient();
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      const nextUserId = session?.user.id ?? null;
+      if (nextUserId === currentUserId.current) return;
+
+      currentUserId.current = nextUserId;
+
+      if (!nextUserId) {
+        setFolders([]);
+        return;
+      }
+
+      fetchFoldersForUser(nextUserId).then(setFolders);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const addFolder = async (name: string) => {
     const trimmedName = name.trim();
